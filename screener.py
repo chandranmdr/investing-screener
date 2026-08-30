@@ -15,7 +15,7 @@ reading a local file needs no network.
 
 USAGE
 -----
-    pip3 install yfinance pandas numpy lxml
+    pip3 install yfinance pandas numpy scipy lxml
     python3 screener.py                 # full run, writes CSVs next to this file
     python3 screener.py --self-test     # no network; verifies the maths on synthetic data
     python3 screener.py --universe sp500
