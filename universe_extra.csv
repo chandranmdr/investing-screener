@@ -1,0 +1,14 @@
+ticker,name,sector,index
+ALNY,Alnylam Pharmaceuticals,Health Care,NDX
+ARM,Arm Holdings,Information Technology,NDX
+ASML,ASML Holding,Information Technology,NDX
+CCEP,Coca-Cola Europacific Partners,Consumer Staples,NDX
+EA,Electronic Arts,Communication Services,NDX
+FER,Ferrovial,Industrials,NDX
+INSM,Insmed,Health Care,NDX
+MELI,MercadoLibre,Consumer Discretionary,NDX
+MSTR,Strategy (MicroStrategy),Information Technology,NDX
+PDD,PDD Holdings,Consumer Discretionary,NDX
+SHOP,Shopify,Information Technology,NDX
+TRI,Thomson Reuters,Industrials,NDX
+ZS,Zscaler,Information Technology,NDX
