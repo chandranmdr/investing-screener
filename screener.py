@@ -15,7 +15,7 @@ reading a local file needs no network.
 
 USAGE
 -----
-    pip3 install yfinance pandas numpy scipy lxml
+    pip3 install yfinance pandas numpy lxml
     python3 screener.py                 # full run, writes CSVs next to this file
     python3 screener.py --self-test     # no network; verifies the maths on synthetic data
     python3 screener.py --universe sp500
@@ -182,10 +182,12 @@ def _constituents(url, ticker_candidates, min_rows, label):
     cols = list(t.columns)
     namecol = _first_present(cols, ["Security", "Company", "Company Name", "Name"])
     seccol = _first_present(cols, ["GICS Sector", "ICB Industry", "Sector", "Industry"])
+    indcol = _first_present(cols, ["GICS Sub-Industry", "ICB Subsector", "Sub-Industry", "Subsector"])
     return pd.DataFrame({
         "ticker": t[tcol].astype(str),
         "name": t[namecol].astype(str) if namecol else "",
         "sector": t[seccol].astype(str) if seccol else "",
+        "industry": t[indcol].astype(str) if indcol else "",
         "index": label,
     })
 
@@ -213,9 +215,12 @@ def _fetch_universe(which):
     # Yahoo uses '-' where Wikipedia uses '.' (BRK.B -> BRK-B)
     df["ticker"] = df["ticker"].str.replace(".", "-", regex=False).str.strip()
     # Collapse duplicates (a name in both indices), remembering both memberships.
+    if "industry" not in df.columns:
+        df["industry"] = ""
     df = (df.groupby("ticker", as_index=False)
             .agg(name=("name", "first"),
                  sector=("sector", "first"),
+                 industry=("industry", "first"),
                  index=("index", lambda s: "+".join(sorted(set(s))))))
     return df
 
@@ -317,6 +322,11 @@ def compute_metrics(close, volume):
     out = pd.DataFrame(index=close.columns)
 
     out["price"] = close.iloc[-1]
+    # Short windows are REPORTED but not scored. They answer "what moved recently",
+    # which is a different question from "what has been strong", and mixing the two
+    # into one number would muddle both.
+    out["ret_1d"] = _ret(close, 1)
+    out["ret_1w"] = _ret(close, 5)
     out["ret_1m"] = _ret(close, 21)
     out["ret_3m"] = _ret(close, 63)
     out["ret_6m"] = _ret(close, 126)
@@ -351,6 +361,13 @@ def compute_metrics(close, volume):
     out["new_52w_high"] = out["pct_from_52w_high"] >= -0.001
     out["near_high"] = out["pct_from_52w_high"].rank(pct=True)
 
+    # Distance from the 52-week LOW. Reported, not scored. A name that is both near its
+    # high and 70% off its low is a mature recovery, not a fresh base - a distinction
+    # every momentum measure hides, and the one that mattered most in the first
+    # interrogation pass. See 00_claude_investing_blueprint.md.
+    lo52 = close.rolling(min(252, len(close))).min().iloc[-1]
+    out["pct_from_52w_low"] = out["price"] / lo52 - 1.0
+
     # Volatility contraction: 20d realised vol vs the preceding 60d. Lower ratio = tighter base.
     rets = close.pct_change()
     vol20 = rets.iloc[-20:].std()
@@ -375,6 +392,38 @@ def compute_metrics(close, volume):
     out["score"] = score / total_w
     out["rank"] = out["score"].rank(ascending=False, method="min").astype(int)
     return out.sort_values("score", ascending=False)
+
+
+def compute_breadth(m, level="sector", min_names=3):
+    """Is a group's move broad, or are two names carrying it?
+
+    A sector ETF's return tells you the group went up. It does NOT tell you whether most
+    of its members went up - a cap-weighted index can rise on two giants while the median
+    constituent falls. That difference decides whether to buy the sector or hunt inside it.
+
+    `concentration` is mean minus median return. Large and positive means a few big winners
+    are dragging the average above the typical stock: a narrow move.
+    """
+    g = m[m[level].astype(str).str.len() > 0].groupby(level)
+    rows = []
+    for name, d in g:
+        if len(d) < min_names:
+            continue
+        rows.append({
+            level: name,
+            "n": len(d),
+            "median_1m": d["ret_1m"].median(),
+            "median_3m": d["ret_3m"].median(),
+            "mean_3m": d["ret_3m"].mean(),
+            "concentration": d["ret_3m"].mean() - d["ret_3m"].median(),
+            "pct_above_50dma": d["above_50dma"].mean(),
+            "pct_above_200dma": d["above_200dma"].mean(),
+            "pct_at_52w_high": d["new_52w_high"].mean(),
+            "median_score": d["score"].median(),
+        })
+    if not rows:
+        return pd.DataFrame()
+    return pd.DataFrame(rows).sort_values("median_3m", ascending=False).reset_index(drop=True)
 
 
 def compute_rotation(close):
@@ -425,11 +474,18 @@ def self_test():
     checks.append(("no NaN scores", bool(m["score"].notna().all())))
     checks.append(("rank 1 is top score", int(m.iloc[0]["rank"]) == 1))
     # Score should recover the underlying drift ordering when noise is small.
+    # Spearman correlation is just Pearson correlation of the RANKS, computed here
+    # directly rather than via method="spearman" - pandas delegates that to scipy,
+    # which this script does not otherwise need and which is absent on a clean runner.
+    def spearman(a, b):
+        return a.rank().corr(b.rank())
+
     drift_by_col = pd.Series(drifts, index=cols)
-    corr = m["score"].corr(drift_by_col.reindex(m.index), method="spearman")
+    drift_aligned = drift_by_col.reindex(m.index)
+    corr = spearman(m["score"], drift_aligned)
     checks.append(("score recovers drift ordering (spearman %.2f > 0.70)" % corr, corr > 0.70))
     # Momentum components specifically should be near-monotonic in drift.
-    corr_rs = m["rs_3m"].corr(drift_by_col.reindex(m.index), method="spearman")
+    corr_rs = spearman(m["rs_3m"], drift_aligned)
     checks.append(("rs_3m recovers drift ordering (spearman %.2f > 0.90)" % corr_rs, corr_rs > 0.90))
     checks.append(("rs_3m is a percentile", bool(m["rs_3m"].between(0, 1).all())))
     checks.append(("52w high proximity <= 0", bool((m["pct_from_52w_high"] <= 1e-9).all())))
@@ -438,6 +494,26 @@ def self_test():
     # Rotation maths on a small frame
     rot = compute_rotation(close[cols[:5]])
     checks.append(("rotation returns 1 row per ticker", len(rot) == 5))
+
+    # Short-window and 52w-low columns present and sane
+    checks.append(("1d/1w returns computed",
+                   m["ret_1d"].notna().all() and m["ret_1w"].notna().all()))
+    checks.append(("52w low distance is never negative",
+                   bool((m["pct_from_52w_low"] >= -1e-9).all())))
+
+    # Breadth: a group where one name carries the move must show high concentration,
+    # and one where every name moves together must show near-zero.
+    bm = m.copy()
+    bm["sector"] = ["Narrow"] * 30 + ["Broad"] * 30
+    bm.loc[bm.index[:30], "ret_3m"] = [3.0] + [0.01] * 29      # one huge winner, rest flat
+    bm.loc[bm.index[30:], "ret_3m"] = [0.10] * 30              # all identical
+    br = compute_breadth(bm, "sector", min_names=3).set_index("sector")
+    checks.append(("breadth flags the narrow group",
+                   br.loc["Narrow", "concentration"] > 0.05))
+    checks.append(("breadth shows ~zero concentration when uniform",
+                   abs(br.loc["Broad", "concentration"]) < 1e-9))
+    checks.append(("breadth skips groups below min_names",
+                   len(compute_breadth(bm.head(2), "sector", min_names=3)) == 0))
 
     # Constituent-table picker: must skip decoy tables and select on columns, not page text.
     decoy = pd.DataFrame({"Ticker": ["AAA", "BBB"], "Company": ["a", "b"]})          # too few rows
@@ -492,10 +568,13 @@ def main():
     print("Computing metrics on %d names, %d sessions..." % (close.shape[1], close.shape[0]))
     m = compute_metrics(close, volume)
 
-    m = m.join(uni.set_index("ticker")[["name", "sector", "index"]])
-    cols = ["rank", "score", "name", "sector", "index", "price",
-            "ret_1m", "ret_3m", "ret_6m", "rs_1m", "rs_3m", "rs_6m", "rs_3m_chg",
-            "pct_from_52w_high", "new_52w_high", "pct_vs_50dma", "pct_vs_200dma",
+    join_cols = [c for c in ("name", "sector", "industry", "index") if c in uni.columns]
+    m = m.join(uni.set_index("ticker")[join_cols])
+    cols = ["rank", "score", "name", "sector", "industry", "index", "price",
+            "ret_1d", "ret_1w", "ret_1m", "ret_3m", "ret_6m",
+            "rs_1m", "rs_3m", "rs_6m", "rs_3m_chg",
+            "pct_from_52w_high", "pct_from_52w_low", "new_52w_high",
+            "pct_vs_50dma", "pct_vs_200dma",
             "above_50dma", "above_200dma", "vol_ratio_20_60", "volume_x"]
     m = m[[c for c in cols if c in m.columns]]
 
@@ -503,12 +582,20 @@ def main():
     etf_close, _ = fetch_prices(list(ROTATION_ETFS.keys()))
     rot = compute_rotation(etf_close)
 
+    sector_breadth = compute_breadth(m, "sector", min_names=3)
+    industry_breadth = (compute_breadth(m, "industry", min_names=4)
+                        if "industry" in m.columns else pd.DataFrame())
+
     cand_path = os.path.join(OUTDIR, "candidates_%s.csv" % today)
     rot_path = os.path.join(OUTDIR, "rotation_%s.csv" % today)
     m.to_csv(cand_path)
     rot.to_csv(rot_path, index=False)
     m.to_csv(os.path.join(OUTDIR, "latest_candidates.csv"))
     rot.to_csv(os.path.join(OUTDIR, "latest_rotation.csv"), index=False)
+    for df, stem in ((sector_breadth, "sector_breadth"), (industry_breadth, "industry_breadth")):
+        if len(df):
+            df.to_csv(os.path.join(OUTDIR, "%s_%s.csv" % (stem, today)), index=False)
+            df.to_csv(os.path.join(OUTDIR, "latest_%s.csv" % stem), index=False)
 
     pd.set_option("display.width", 200, "display.max_columns", 30)
     print("\n=== TOP %d BY COMPOSITE ===" % args.top)
@@ -516,8 +603,24 @@ def main():
             "pct_from_52w_high", "vol_ratio_20_60", "volume_x"]
     print(m.head(args.top)[[c for c in show if c in m.columns]].round(3).to_string())
 
-    print("\n=== SECTOR / INDEX ROTATION (3m sorted) ===")
+    print("\n=== BIGGEST MOVES YESTERDAY (top 15 by 1-day return) ===")
+    mv = ["name", "sector", "ret_1d", "ret_1w", "volume_x", "rank"]
+    print(m.sort_values("ret_1d", ascending=False).head(15)[
+        [c for c in mv if c in m.columns]].round(3).to_string())
+
+    print("\n=== SECTOR / INDEX ROTATION (ETFs, 3m sorted) ===")
     print(rot.round(4).to_string(index=False))
+
+    if len(sector_breadth):
+        print("\n=== SECTOR BREADTH (the MEDIAN stock, not the cap-weighted ETF) ===")
+        print("  concentration = mean minus median 3m return; large positive = a few names carrying it")
+        print(sector_breadth.round(3).to_string(index=False))
+
+    if len(industry_breadth):
+        print("\n=== STRONGEST INDUSTRIES (>=4 names, by median 3m) ===")
+        print(industry_breadth.head(12).round(3).to_string(index=False))
+        print("\n=== WEAKEST INDUSTRIES ===")
+        print(industry_breadth.tail(8).round(3).to_string(index=False))
 
     print("\nWritten:\n  %s\n  %s" % (cand_path, rot_path))
     print("\nThese are CANDIDATES, not decisions. Most breakouts fail. Next step is to hand")
