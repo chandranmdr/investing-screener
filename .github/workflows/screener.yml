@@ -19,7 +19,7 @@ jobs:
           python-version: '3.11'
 
       - name: Install dependencies
-        run: pip install yfinance pandas numpy lxml html5lib beautifulsoup4
+        run: pip install yfinance pandas numpy lxml html5lib beautifulsoup4 scipy
 
       - name: Self-test the maths before trusting a run
         run: python screener.py --self-test
