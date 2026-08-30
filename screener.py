@@ -25,6 +25,13 @@ OUTPUT (written to ./output/)
     rotation_YYYY-MM-DD.csv     sector / index ETF relative strength
     latest_candidates.csv       copy of the newest run, stable filename for Claude to read
     latest_rotation.csv
+
+SCORED vs REPORTED
+------------------
+Only the columns in WEIGHTS move the composite. Everything else in the CSV - short-window
+returns, pct_from_52w_low, gap_pct, gap_up, rvol - is reported so the interrogation pass can
+see it, and is deliberately excluded from the score. Adding a column is cheap; adding a
+weight changes what the screen IS, and needs evidence from the dated archives first.
 """
 
 import argparse
@@ -70,6 +77,11 @@ WEIGHTS = {
     "vol_contraction": 0.10,  # range narrowing into a base
     "volume_surge": 0.05, # recent participation
 }
+
+# Overnight-gap threshold for the reported gapper list. 3% is the figure from the
+# Humbled Trader prefilter. It is a DISPLAY filter only - gap_pct, gap_up and rvol are
+# written to the CSV and printed, and touch no score. See the note in compute_metrics.
+GAP_THRESHOLD = 0.03
 
 
 # --------------------------------------------------------------------------------------
@@ -233,20 +245,29 @@ MIN_SESSIONS = 180
 
 
 def _download_chunk(chunk, period, threads):
-    """One yfinance call. Returns (close, volume) frames, or (None, None) on total failure."""
+    """One yfinance call. Returns (close, volume, open_), or (None, None, None) on failure.
+
+    Open is pulled only so the overnight gap can be computed. It is optional everywhere
+    downstream: if a provider stops returning it, gap_pct goes NaN rather than wrong.
+    """
     import yfinance as yf
     d = yf.download(chunk, period=period, interval="1d", auto_adjust=True,
                     progress=False, threads=threads, group_by="column")
     if d is None or len(d) == 0:
-        return None, None
+        return None, None, None
     if isinstance(d.columns, pd.MultiIndex):
-        return d["Close"], d["Volume"]
+        op = d["Open"] if "Open" in d.columns.get_level_values(0) else None
+        return d["Close"], d["Volume"], op
+    op = d[["Open"]].rename(columns={"Open": chunk[0]}) if "Open" in d.columns else None
     return (d[["Close"]].rename(columns={"Close": chunk[0]}),
-            d[["Volume"]].rename(columns={"Volume": chunk[0]}))
+            d[["Volume"]].rename(columns={"Volume": chunk[0]}),
+            op)
 
 
 def fetch_prices(tickers, period="1y", batch=50, threads=4, pause=1.0):
-    """Bulk daily OHLCV. Returns (close_df, volume_df) indexed by date, columns = tickers.
+    """Bulk daily OHLCV. Returns (close_df, volume_df, open_df) indexed by date, columns = tickers.
+
+    open_df is None if no chunk returned Open data; every consumer must tolerate that.
 
     Concurrency is deliberately modest. Large batches with unlimited threads make macOS
     fail with 'getaddrinfo() thread failed to start' and spurious DNS/SSL errors - that is
@@ -255,18 +276,20 @@ def fetch_prices(tickers, period="1y", batch=50, threads=4, pause=1.0):
     """
     import time
 
-    closes, volumes = [], []
+    closes, volumes, opens = [], [], []
     for i in range(0, len(tickers), batch):
         chunk = tickers[i:i + batch]
         print("  downloading %d-%d of %d..." % (i + 1, min(i + batch, len(tickers)), len(tickers)))
         try:
-            c, v = _download_chunk(chunk, period, threads)
+            c, v, o = _download_chunk(chunk, period, threads)
         except Exception as e:
             print("    batch failed (%s) - will retry these individually" % e)
             continue
         if c is not None:
             closes.append(c)
             volumes.append(v)
+            if o is not None:
+                opens.append(o)
         time.sleep(pause)
 
     if not closes:
@@ -284,7 +307,7 @@ def fetch_prices(tickers, period="1y", batch=50, threads=4, pause=1.0):
         fixed = []
         for t in missing:
             try:
-                c, v = _download_chunk([t], period, False)
+                c, v, o = _download_chunk([t], period, False)
             except Exception:
                 continue
             if c is None or c.notna().sum().sum() < MIN_SESSIONS:
@@ -292,6 +315,9 @@ def fetch_prices(tickers, period="1y", batch=50, threads=4, pause=1.0):
             c.columns, v.columns = [t], [t]
             close = close.drop(columns=[t], errors="ignore").join(c, how="outer")
             volume = volume.drop(columns=[t], errors="ignore").join(v, how="outer")
+            if o is not None:
+                o.columns = [t]
+                opens.append(o)   # de-duplicated below, keeping this newer copy
             fixed.append(t)
             time.sleep(0.4)
         print("  recovered %d of %d on retry" % (len(fixed), len(missing)))
@@ -304,7 +330,19 @@ def fetch_prices(tickers, period="1y", batch=50, threads=4, pause=1.0):
               % (dropped, MIN_SESSIONS, ", ".join(lost[:15]),
                  " ..." if len(lost) > 15 else ""))
     print("  usable universe: %d names" % len(keep))
-    return close[keep].sort_index(), volume[keep].sort_index()
+    close = close[keep].sort_index()
+    volume = volume[keep].sort_index()
+
+    if opens:
+        open_ = pd.concat(opens, axis=1)
+        # A serially-retried ticker can appear twice; the retry copy is the good one.
+        open_ = open_.loc[:, ~open_.columns.duplicated(keep="last")]
+        # Force the same shape as close, so a ticker missing an Open is NaN, not misaligned.
+        open_ = open_.reindex(index=close.index, columns=close.columns)
+    else:
+        open_ = None
+        print("  WARNING: no Open data returned - gap_pct will be blank this run")
+    return close, volume, open_
 
 
 # --------------------------------------------------------------------------------------
@@ -317,7 +355,7 @@ def _ret(close, days):
     return close.iloc[-1] / close.iloc[-1 - days] - 1.0
 
 
-def compute_metrics(close, volume):
+def compute_metrics(close, volume, open_=None):
     """All metrics are point-in-time as of the last row. No forward-looking data is used."""
     out = pd.DataFrame(index=close.columns)
 
@@ -381,6 +419,28 @@ def compute_metrics(close, volume):
     v50 = volume.iloc[-50:].mean()
     out["volume_x"] = v5 / v50
     out["volume_surge"] = out["volume_x"].rank(pct=True)
+
+    # Overnight gap and single-day relative volume. REPORTED, DELIBERATELY NOT SCORED.
+    #
+    # Borrowed from the gap-up prefilter idea, with two limits stated rather than hidden:
+    #   1. This is the gap of the LAST COMPLETED SESSION, not a live pre-market gap. On a
+    #      Sunday run it is Friday's. yfinance daily bars end at the close - there is no
+    #      pre-market number in this data, and a column header implying one would be a lie.
+    #   2. A gap is an event; this is a trend screen. Weighting it into the composite would
+    #      quietly turn a momentum screen into a news screen. If it ever earns a weight it
+    #      earns it from the dated scorecard archives, not from a tutorial.
+    if open_ is not None and len(close) >= 2:
+        out["gap_pct"] = open_.iloc[-1] / close.iloc[-2] - 1.0
+    else:
+        out["gap_pct"] = np.nan
+    out["gap_up"] = out["gap_pct"] >= GAP_THRESHOLD
+
+    # Relative volume: the latest session against the 50 sessions BEFORE it. Excluding the
+    # day itself matters - a genuine 5x day included in its own baseline reads as about 4x.
+    if len(volume) >= 51:
+        out["rvol"] = volume.iloc[-1] / volume.iloc[-51:-1].mean()
+    else:
+        out["rvol"] = np.nan
 
     # Composite
     score = pd.Series(0.0, index=out.index)
@@ -466,7 +526,14 @@ def self_test():
     close = pd.DataFrame(100 * np.exp(np.cumsum(logret, axis=0)), index=idx, columns=cols)
     volume = pd.DataFrame(rng.integers(1e6, 5e6, size=(days, n)), index=idx, columns=cols).astype(float)
 
-    m = compute_metrics(close, volume)
+    # Opens default to the prior close (zero gap everywhere), then inject a known +5%
+    # overnight gap into T00 and a known 4x volume day into T01, so gap_pct and rvol are
+    # checked against exact arithmetic rather than "looks about right".
+    open_ = close.shift(1).bfill()
+    open_.iloc[-1, 0] = close.iloc[-2, 0] * 1.05
+    volume.iloc[-1, 1] = volume.iloc[-51:-1, 1].mean() * 4.0
+
+    m = compute_metrics(close, volume, open_)
 
     checks = []
     checks.append(("all tickers scored", len(m) == n))
@@ -500,6 +567,25 @@ def self_test():
                    m["ret_1d"].notna().all() and m["ret_1w"].notna().all()))
     checks.append(("52w low distance is never negative",
                    bool((m["pct_from_52w_low"] >= -1e-9).all())))
+
+    # Gap and relative volume: exact answers, and the failure mode that matters most -
+    # a missing Open must produce NaN, never a silently wrong number.
+    checks.append(("gap_pct recovers the injected +5% gap",
+                   abs(m.loc["T00", "gap_pct"] - 0.05) < 1e-9))
+    checks.append(("gap_up flags it at the 3% threshold", bool(m.loc["T00", "gap_up"])))
+    checks.append(("no false gap_up on the flat names",
+                   int(m["gap_up"].sum()) == 1))
+    checks.append(("rvol recovers the injected 4x volume day",
+                   abs(m.loc["T01", "rvol"] - 4.0) < 1e-9))
+    m_noopen = compute_metrics(close, volume)
+    checks.append(("gap_pct is NaN when no Open data is supplied",
+                   bool(m_noopen["gap_pct"].isna().all())))
+    checks.append(("no gap_up fires without Open data",
+                   int(m_noopen["gap_up"].sum()) == 0))
+    checks.append(("gap and rvol never enter the composite",
+                   not any(k in WEIGHTS for k in ("gap_pct", "gap_up", "rvol"))))
+    checks.append(("score is unchanged with and without Open data",
+                   float((m["score"] - m_noopen["score"].reindex(m.index)).abs().max()) < 1e-12))
 
     # Breadth: a group where one name carries the move must show high concentration,
     # and one where every name moves together must show near-zero.
@@ -564,9 +650,9 @@ def main():
     tickers = sorted(uni["ticker"].unique().tolist())
 
     print("Fetching prices...")
-    close, volume = fetch_prices(tickers)
+    close, volume, open_ = fetch_prices(tickers)
     print("Computing metrics on %d names, %d sessions..." % (close.shape[1], close.shape[0]))
-    m = compute_metrics(close, volume)
+    m = compute_metrics(close, volume, open_)
 
     join_cols = [c for c in ("name", "sector", "industry", "index") if c in uni.columns]
     m = m.join(uni.set_index("ticker")[join_cols])
@@ -575,11 +661,12 @@ def main():
             "rs_1m", "rs_3m", "rs_6m", "rs_3m_chg",
             "pct_from_52w_high", "pct_from_52w_low", "new_52w_high",
             "pct_vs_50dma", "pct_vs_200dma",
-            "above_50dma", "above_200dma", "vol_ratio_20_60", "volume_x"]
+            "above_50dma", "above_200dma", "vol_ratio_20_60", "volume_x",
+            "gap_pct", "gap_up", "rvol"]
     m = m[[c for c in cols if c in m.columns]]
 
     print("Fetching rotation ETFs...")
-    etf_close, _ = fetch_prices(list(ROTATION_ETFS.keys()))
+    etf_close, _, _ = fetch_prices(list(ROTATION_ETFS.keys()))
     rot = compute_rotation(etf_close)
 
     sector_breadth = compute_breadth(m, "sector", min_names=3)
@@ -607,6 +694,18 @@ def main():
     mv = ["name", "sector", "ret_1d", "ret_1w", "volume_x", "rank"]
     print(m.sort_values("ret_1d", ascending=False).head(15)[
         [c for c in mv if c in m.columns]].round(3).to_string())
+
+    if "gap_pct" in m.columns and m["gap_pct"].notna().any():
+        print("\n=== GAPPED UP >=%.0f%% ON THE LAST COMPLETED SESSION (sorted by rvol) ==="
+              % (GAP_THRESHOLD * 100))
+        print("  That session's OPEN vs the prior CLOSE. Not a live pre-market gap -")
+        print("  on a weekend run this is Friday's gap and may already be closed.")
+        gappers = m[m["gap_up"].fillna(False)].sort_values("rvol", ascending=False)
+        if len(gappers):
+            gv = ["name", "sector", "gap_pct", "rvol", "ret_1d", "pct_from_52w_high", "rank"]
+            print(gappers.head(15)[[c for c in gv if c in gappers.columns]].round(3).to_string())
+        else:
+            print("  none")
 
     print("\n=== SECTOR / INDEX ROTATION (ETFs, 3m sorted) ===")
     print(rot.round(4).to_string(index=False))
