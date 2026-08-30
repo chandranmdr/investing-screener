@@ -1,0 +1,504 @@
+ticker,name,sector,index
+A,Agilent Technologies,Health Care,SP500
+AAPL,Apple Inc.,Information Technology,SP500
+ABBV,AbbVie,Health Care,SP500
+ABNB,Airbnb,Consumer Discretionary,SP500
+ABT,Abbott Laboratories,Health Care,SP500
+ACGL,Arch Capital Group,Financials,SP500
+ACN,Accenture,Information Technology,SP500
+ADBE,Adobe Inc.,Information Technology,SP500
+ADI,Analog Devices,Information Technology,SP500
+ADM,Archer Daniels Midland,Consumer Staples,SP500
+ADP,Automatic Data Processing,Industrials,SP500
+ADSK,Autodesk,Information Technology,SP500
+AEE,Ameren,Utilities,SP500
+AEP,American Electric Power,Utilities,SP500
+AES,AES Corporation,Utilities,SP500
+AFL,Aflac,Financials,SP500
+AIG,American International Group,Financials,SP500
+AIZ,Assurant,Financials,SP500
+AJG,Arthur J. Gallagher & Co.,Financials,SP500
+AKAM,Akamai Technologies,Information Technology,SP500
+ALB,Albemarle Corporation,Materials,SP500
+ALGN,Align Technology,Health Care,SP500
+ALL,Allstate,Financials,SP500
+ALLE,Allegion,Industrials,SP500
+AMAT,Applied Materials,Information Technology,SP500
+AMCR,Amcor,Materials,SP500
+AMD,Advanced Micro Devices,Information Technology,SP500
+AME,Ametek,Industrials,SP500
+AMGN,Amgen,Health Care,SP500
+AMP,Ameriprise Financial,Financials,SP500
+AMT,American Tower,Real Estate,SP500
+AMZN,Amazon,Consumer Discretionary,SP500
+ANET,Arista Networks,Information Technology,SP500
+AON,Aon plc,Financials,SP500
+AOS,A. O. Smith,Industrials,SP500
+APA,APA Corporation,Energy,SP500
+APD,Air Products,Materials,SP500
+APH,Amphenol,Information Technology,SP500
+APO,Apollo Global Management,Financials,SP500
+APP,AppLovin,Communication Services,SP500
+APTV,Aptiv,Consumer Discretionary,SP500
+ARE,Alexandria Real Estate Equities,Real Estate,SP500
+ARES,Ares Management,Financials,SP500
+ATO,Atmos Energy,Utilities,SP500
+AVGO,Broadcom,Information Technology,SP500
+AVY,Avery Dennison,Materials,SP500
+AWK,American Water Works,Utilities,SP500
+AXON,Axon Enterprise,Industrials,SP500
+AXP,American Express,Financials,SP500
+AZO,AutoZone,Consumer Discretionary,SP500
+BA,Boeing,Industrials,SP500
+BAC,Bank of America,Financials,SP500
+BALL,Ball Corporation,Materials,SP500
+BAX,Baxter International,Health Care,SP500
+BBY,Best Buy,Consumer Discretionary,SP500
+BDX,Becton Dickinson,Health Care,SP500
+BEN,Franklin Resources,Financials,SP500
+BF-B,Brown–Forman,Consumer Staples,SP500
+BG,Bunge Global,Consumer Staples,SP500
+BIIB,Biogen,Health Care,SP500
+BKNG,Booking Holdings,Consumer Discretionary,SP500
+BKR,Baker Hughes,Energy,SP500
+BLDR,Builders FirstSource,Industrials,SP500
+BLK,BlackRock,Financials,SP500
+BMY,Bristol Myers Squibb,Health Care,SP500
+BNY,BNY Mellon,Financials,SP500
+BR,Broadridge Financial Solutions,Industrials,SP500
+BRK-B,Berkshire Hathaway,Financials,SP500
+BRO,Brown & Brown,Financials,SP500
+BSX,Boston Scientific,Health Care,SP500
+BX,Blackstone Inc.,Financials,SP500
+BXP,"BXP, Inc.",Real Estate,SP500
+C,Citigroup,Financials,SP500
+CAH,Cardinal Health,Health Care,SP500
+CARR,Carrier Global,Industrials,SP500
+CASY,Casey's,Consumer Staples,SP500
+CAT,Caterpillar Inc.,Industrials,SP500
+CB,Chubb Limited,Financials,SP500
+CBOE,Cboe Global Markets,Financials,SP500
+CBRE,CBRE Group,Real Estate,SP500
+CCI,Crown Castle,Real Estate,SP500
+CCL,Carnival Corporation,Consumer Discretionary,SP500
+CDNS,Cadence Design Systems,Information Technology,SP500
+CDW,CDW Corporation,Information Technology,SP500
+CEG,Constellation Energy,Utilities,SP500
+CF,CF Industries,Materials,SP500
+CFG,Citizens Financial Group,Financials,SP500
+CHD,Church & Dwight,Consumer Staples,SP500
+CHRW,C.H. Robinson,Industrials,SP500
+CHTR,Charter Communications,Communication Services,SP500
+CI,Cigna,Health Care,SP500
+CIEN,Ciena,Information Technology,SP500
+CINF,Cincinnati Financial,Financials,SP500
+CL,Colgate-Palmolive,Consumer Staples,SP500
+CLX,Clorox,Consumer Staples,SP500
+CMCSA,Comcast,Communication Services,SP500
+CME,CME Group,Financials,SP500
+CMG,Chipotle Mexican Grill,Consumer Discretionary,SP500
+CMI,Cummins,Industrials,SP500
+CMS,CMS Energy,Utilities,SP500
+CNC,Centene Corporation,Health Care,SP500
+CNP,CenterPoint Energy,Utilities,SP500
+COF,Capital One,Financials,SP500
+COHR,Coherent Corp.,Information Technology,SP500
+COIN,Coinbase,Financials,SP500
+COO,Cooper Companies (The),Health Care,SP500
+COP,ConocoPhillips,Energy,SP500
+COR,Cencora,Health Care,SP500
+COST,Costco,Consumer Staples,SP500
+CPAY,Corpay,Financials,SP500
+CPRT,Copart,Industrials,SP500
+CPT,Camden Property Trust,Real Estate,SP500
+CRH,CRH plc,Materials,SP500
+CRL,Charles River Laboratories,Health Care,SP500
+CRM,Salesforce,Information Technology,SP500
+CRWD,CrowdStrike,Information Technology,SP500
+CSCO,Cisco,Information Technology,SP500
+CSGP,CoStar Group,Real Estate,SP500
+CSX,CSX Corporation,Industrials,SP500
+CTAS,Cintas,Industrials,SP500
+CTSH,Cognizant,Information Technology,SP500
+CTVA,Corteva,Materials,SP500
+CVNA,Carvana,Consumer Discretionary,SP500
+CVS,CVS Health,Health Care,SP500
+CVX,Chevron Corporation,Energy,SP500
+D,Dominion Energy,Utilities,SP500
+DAL,Delta Air Lines,Industrials,SP500
+DASH,DoorDash,Consumer Discretionary,SP500
+DD,DuPont,Industrials,SP500
+DDOG,Datadog,Information Technology,SP500
+DE,Deere & Company,Industrials,SP500
+DECK,Deckers Brands,Consumer Discretionary,SP500
+DELL,Dell Technologies,Information Technology,SP500
+DG,Dollar General,Consumer Staples,SP500
+DGX,Quest Diagnostics,Health Care,SP500
+DHI,D. R. Horton,Consumer Discretionary,SP500
+DHR,Danaher Corporation,Health Care,SP500
+DIS,Walt Disney Company (The),Communication Services,SP500
+DLR,Digital Realty,Real Estate,SP500
+DLTR,Dollar Tree,Consumer Staples,SP500
+DOC,Healthpeak Properties,Real Estate,SP500
+DOV,Dover Corporation,Industrials,SP500
+DOW,Dow Inc.,Materials,SP500
+DPZ,Domino's,Consumer Discretionary,SP500
+DRI,Darden Restaurants,Consumer Discretionary,SP500
+DTE,DTE Energy,Utilities,SP500
+DUK,Duke Energy,Utilities,SP500
+DVA,DaVita,Health Care,SP500
+DVN,Devon Energy,Energy,SP500
+DXCM,Dexcom,Health Care,SP500
+EBAY,eBay Inc.,Consumer Discretionary,SP500
+ECHO,EchoStar,Communication Services,SP500
+ECL,Ecolab,Materials,SP500
+ED,Consolidated Edison,Utilities,SP500
+EFX,Equifax,Industrials,SP500
+EG,Everest Group,Financials,SP500
+EIX,Edison International,Utilities,SP500
+EL,Estée Lauder Companies (The),Consumer Staples,SP500
+ELV,Elevance Health,Health Care,SP500
+EME,Emcor,Industrials,SP500
+EMR,Emerson Electric,Industrials,SP500
+EOG,EOG Resources,Energy,SP500
+EQIX,Equinix,Real Estate,SP500
+EQT,EQT Corporation,Energy,SP500
+ERIE,Erie Indemnity,Financials,SP500
+ES,Eversource Energy,Utilities,SP500
+ESS,Essex Property Trust,Real Estate,SP500
+ETN,Eaton Corporation,Industrials,SP500
+ETR,Entergy,Utilities,SP500
+EVRG,Evergy,Utilities,SP500
+EW,Edwards Lifesciences,Health Care,SP500
+EXC,Exelon,Utilities,SP500
+EXE,Expand Energy,Energy,SP500
+EXPD,Expeditors International,Industrials,SP500
+EXPE,Expedia Group,Consumer Discretionary,SP500
+EXR,Extra Space Storage,Real Estate,SP500
+F,Ford Motor Company,Consumer Discretionary,SP500
+FANG,Diamondback Energy,Energy,SP500
+FAST,Fastenal,Industrials,SP500
+FCX,Freeport-McMoRan,Materials,SP500
+FDS,FactSet,Financials,SP500
+FDX,FedEx,Industrials,SP500
+FDXF,FedEx Freight,Industrials,SP500
+FE,FirstEnergy,Utilities,SP500
+FERG,Ferguson Enterprises,Industrials,SP500
+FFIV,"F5, Inc.",Information Technology,SP500
+FICO,Fair Isaac,Information Technology,SP500
+FIS,Fidelity National Information Services,Financials,SP500
+FISV,Fiserv,Financials,SP500
+FITB,Fifth Third Bancorp,Financials,SP500
+FIX,Comfort Systems USA,Industrials,SP500
+FLEX,Flex Ltd.,Information Technology,SP500
+FOX,Fox Corporation (Class B),Communication Services,SP500
+FOXA,Fox Corporation (Class A),Communication Services,SP500
+FRT,Federal Realty Investment Trust,Real Estate,SP500
+FSLR,First Solar,Information Technology,SP500
+FTNT,Fortinet,Information Technology,SP500
+FTV,Fortive,Industrials,SP500
+GD,General Dynamics,Industrials,SP500
+GDDY,GoDaddy,Information Technology,SP500
+GE,GE Aerospace,Industrials,SP500
+GEHC,GE HealthCare,Health Care,SP500
+GEN,Gen Digital,Information Technology,SP500
+GEV,GE Vernova,Industrials,SP500
+GILD,Gilead Sciences,Health Care,SP500
+GIS,General Mills,Consumer Staples,SP500
+GL,Globe Life,Financials,SP500
+GLW,Corning Inc.,Information Technology,SP500
+GM,General Motors,Consumer Discretionary,SP500
+GNRC,Generac,Industrials,SP500
+GOOG,Alphabet Inc. (Class C),Communication Services,SP500
+GOOGL,Alphabet Inc. (Class A),Communication Services,SP500
+GPC,Genuine Parts Company,Consumer Discretionary,SP500
+GPN,Global Payments,Financials,SP500
+GRMN,Garmin,Consumer Discretionary,SP500
+GS,Goldman Sachs,Financials,SP500
+GWW,W. W. Grainger,Industrials,SP500
+HAL,Halliburton,Energy,SP500
+HAS,Hasbro,Consumer Discretionary,SP500
+HBAN,Huntington Bancshares,Financials,SP500
+HCA,HCA Healthcare,Health Care,SP500
+HD,Home Depot (The),Consumer Discretionary,SP500
+HIG,Hartford (The),Financials,SP500
+HII,Huntington Ingalls Industries,Industrials,SP500
+HLT,Hilton Worldwide,Consumer Discretionary,SP500
+HON,Honeywell Technologies,Industrials,SP500
+HONA,Honeywell Aerospace,Industrials,SP500
+HOOD,Robinhood Markets,Financials,SP500
+HPE,Hewlett Packard Enterprise,Information Technology,SP500
+HPQ,HP Inc.,Information Technology,SP500
+HRL,Hormel Foods,Consumer Staples,SP500
+HSIC,Henry Schein,Health Care,SP500
+HST,Host Hotels & Resorts,Real Estate,SP500
+HSY,Hershey Company (The),Consumer Staples,SP500
+HUBB,Hubbell Incorporated,Industrials,SP500
+HUM,Humana,Health Care,SP500
+HWM,Howmet Aerospace,Industrials,SP500
+IBKR,Interactive Brokers,Financials,SP500
+IBM,IBM,Information Technology,SP500
+ICE,Intercontinental Exchange,Financials,SP500
+IDXX,Idexx Laboratories,Health Care,SP500
+IEX,IDEX Corporation,Industrials,SP500
+IFF,International Flavors & Fragrances,Materials,SP500
+INCY,Incyte,Health Care,SP500
+INTC,Intel,Information Technology,SP500
+INTU,Intuit,Information Technology,SP500
+INVH,Invitation Homes,Real Estate,SP500
+IP,International Paper,Materials,SP500
+IQV,IQVIA,Health Care,SP500
+IR,Ingersoll Rand,Industrials,SP500
+IRM,Iron Mountain,Real Estate,SP500
+ISRG,Intuitive Surgical,Health Care,SP500
+IT,Gartner,Information Technology,SP500
+ITW,Illinois Tool Works,Industrials,SP500
+IVZ,Invesco,Financials,SP500
+J,Jacobs Solutions,Industrials,SP500
+JBHT,J.B. Hunt,Industrials,SP500
+JBL,Jabil,Information Technology,SP500
+JCI,Johnson Controls,Industrials,SP500
+JKHY,Jack Henry & Associates,Financials,SP500
+JNJ,Johnson & Johnson,Health Care,SP500
+JPM,JPMorgan Chase,Financials,SP500
+KDP,Keurig Dr Pepper,Consumer Staples,SP500
+KEY,KeyCorp,Financials,SP500
+KEYS,Keysight Technologies,Information Technology,SP500
+KHC,Kraft Heinz,Consumer Staples,SP500
+KIM,Kimco Realty,Real Estate,SP500
+KKR,KKR & Co.,Financials,SP500
+KLAC,KLA Corporation,Information Technology,SP500
+KMB,Kimberly-Clark,Consumer Staples,SP500
+KMI,Kinder Morgan,Energy,SP500
+KO,Coca-Cola Company (The),Consumer Staples,SP500
+KR,Kroger,Consumer Staples,SP500
+KVUE,Kenvue,Consumer Staples,SP500
+L,Loews Corporation,Financials,SP500
+LDOS,Leidos,Industrials,SP500
+LEN,Lennar,Consumer Discretionary,SP500
+LH,Labcorp,Health Care,SP500
+LHX,L3Harris,Industrials,SP500
+LII,Lennox International,Industrials,SP500
+LIN,Linde plc,Materials,SP500
+LITE,Lumentum,Information Technology,SP500
+LLY,Lilly (Eli),Health Care,SP500
+LMT,Lockheed Martin,Industrials,SP500
+LNT,Alliant Energy,Utilities,SP500
+LOW,Lowe's,Consumer Discretionary,SP500
+LRCX,Lam Research,Information Technology,SP500
+LULU,Lululemon Athletica,Consumer Discretionary,SP500
+LUV,Southwest Airlines,Industrials,SP500
+LVS,Las Vegas Sands,Consumer Discretionary,SP500
+LYB,LyondellBasell,Materials,SP500
+LYV,Live Nation Entertainment,Communication Services,SP500
+MA,Mastercard,Financials,SP500
+MAA,Mid-America Apartment Communities,Real Estate,SP500
+MAR,Marriott International,Consumer Discretionary,SP500
+MAS,Masco,Industrials,SP500
+MCD,McDonald's,Consumer Discretionary,SP500
+MCHP,Microchip Technology,Information Technology,SP500
+MCK,McKesson Corporation,Health Care,SP500
+MCO,Moody's Corporation,Financials,SP500
+MDLZ,Mondelez International,Consumer Staples,SP500
+MDT,Medtronic,Health Care,SP500
+MET,MetLife,Financials,SP500
+META,Meta Platforms,Communication Services,SP500
+MGM,MGM Resorts,Consumer Discretionary,SP500
+MKC,McCormick & Company,Consumer Staples,SP500
+MLM,Martin Marietta Materials,Materials,SP500
+MMM,3M,Industrials,SP500
+MNST,Monster Beverage,Consumer Staples,SP500
+MO,Altria,Consumer Staples,SP500
+MOS,Mosaic Company (The),Materials,SP500
+MPC,Marathon Petroleum,Energy,SP500
+MPWR,Monolithic Power Systems,Information Technology,SP500
+MRK,Merck & Co.,Health Care,SP500
+MRNA,Moderna,Health Care,SP500
+MRSH,Marsh McLennan,Financials,SP500
+MRVL,Marvell Technology,Information Technology,SP500
+MS,Morgan Stanley,Financials,SP500
+MSCI,MSCI,Financials,SP500
+MSFT,Microsoft,Information Technology,SP500
+MSI,Motorola Solutions,Information Technology,SP500
+MTB,M&T Bank,Financials,SP500
+MTD,Mettler Toledo,Health Care,SP500
+MU,Micron Technology,Information Technology,SP500
+NCLH,Norwegian Cruise Line Holdings,Consumer Discretionary,SP500
+NDAQ,"Nasdaq, Inc.",Financials,SP500
+NDSN,Nordson Corporation,Industrials,SP500
+NEE,NextEra Energy,Utilities,SP500
+NEM,Newmont,Materials,SP500
+NFLX,Netflix,Communication Services,SP500
+NI,NiSource,Utilities,SP500
+NKE,"Nike, Inc.",Consumer Discretionary,SP500
+NOC,Northrop Grumman,Industrials,SP500
+NOW,ServiceNow,Information Technology,SP500
+NRG,NRG Energy,Utilities,SP500
+NSC,Norfolk Southern,Industrials,SP500
+NTAP,NetApp,Information Technology,SP500
+NTRS,Northern Trust,Financials,SP500
+NUE,Nucor,Materials,SP500
+NVDA,Nvidia,Information Technology,SP500
+NVR,"NVR, Inc.",Consumer Discretionary,SP500
+NWS,News Corp (Class B),Communication Services,SP500
+NWSA,News Corp (Class A),Communication Services,SP500
+NXPI,NXP Semiconductors,Information Technology,SP500
+O,Realty Income,Real Estate,SP500
+ODFL,Old Dominion,Industrials,SP500
+OKE,Oneok,Energy,SP500
+OMC,Omnicom Group,Communication Services,SP500
+ON,ON Semiconductor,Information Technology,SP500
+ORCL,Oracle Corporation,Information Technology,SP500
+ORLY,O'Reilly Automotive,Consumer Discretionary,SP500
+OTIS,Otis Worldwide,Industrials,SP500
+OXY,Occidental Petroleum,Energy,SP500
+PANW,Palo Alto Networks,Information Technology,SP500
+PAYX,Paychex,Industrials,SP500
+PCAR,Paccar,Industrials,SP500
+PCG,PG&E Corporation,Utilities,SP500
+PEG,Public Service Enterprise Group,Utilities,SP500
+PEP,PepsiCo,Consumer Staples,SP500
+PFE,Pfizer,Health Care,SP500
+PFG,Principal Financial Group,Financials,SP500
+PG,Procter & Gamble,Consumer Staples,SP500
+PGR,Progressive Corporation,Financials,SP500
+PH,Parker Hannifin,Industrials,SP500
+PHM,PulteGroup,Consumer Discretionary,SP500
+PKG,Packaging Corporation of America,Materials,SP500
+PLD,Prologis,Real Estate,SP500
+PLTR,Palantir Technologies,Information Technology,SP500
+PM,Philip Morris International,Consumer Staples,SP500
+PNC,PNC Financial Services,Financials,SP500
+PNR,Pentair,Industrials,SP500
+PNW,Pinnacle West Capital,Utilities,SP500
+PODD,Insulet Corporation,Health Care,SP500
+PPG,PPG Industries,Materials,SP500
+PPL,PPL Corporation,Utilities,SP500
+PRU,Prudential Financial,Financials,SP500
+PSA,Public Storage,Real Estate,SP500
+PSKY,Paramount Skydance Corporation,Communication Services,SP500
+PSX,Phillips 66,Energy,SP500
+PTC,PTC Inc.,Information Technology,SP500
+PWR,Quanta Services,Industrials,SP500
+PYPL,PayPal,Financials,SP500
+Q,Qnity Electronics,Information Technology,SP500
+QCOM,Qualcomm,Information Technology,SP500
+RCL,Royal Caribbean Group,Consumer Discretionary,SP500
+RDDT,Reddit,Communication Services,SP500
+REG,Regency Centers,Real Estate,SP500
+REGN,Regeneron Pharmaceuticals,Health Care,SP500
+RF,Regions Financial Corporation,Financials,SP500
+RJF,Raymond James Financial,Financials,SP500
+RL,Ralph Lauren Corporation,Consumer Discretionary,SP500
+RMD,ResMed|,Health Care,SP500
+ROK,Rockwell Automation,Industrials,SP500
+ROL,"Rollins, Inc.",Industrials,SP500
+ROP,Roper Technologies,Information Technology,SP500
+ROST,Ross Stores,Consumer Discretionary,SP500
+RSG,Republic Services,Industrials,SP500
+RTX,RTX Corporation,Industrials,SP500
+RVTY,Revvity,Health Care,SP500
+SBAC,SBA Communications,Real Estate,SP500
+SBUX,Starbucks,Consumer Discretionary,SP500
+SCHW,Charles Schwab Corporation,Financials,SP500
+SHW,Sherwin-Williams,Materials,SP500
+SJM,J.M. Smucker Company (The),Consumer Staples,SP500
+SLB,Schlumberger,Energy,SP500
+SMCI,Supermicro,Information Technology,SP500
+SNA,Snap-on,Industrials,SP500
+SNDK,Sandisk,Information Technology,SP500
+SNPS,Synopsys,Information Technology,SP500
+SO,Southern Company,Utilities,SP500
+SOLV,Solventum,Health Care,SP500
+SPG,Simon Property Group,Real Estate,SP500
+SPGI,S&P Global,Financials,SP500
+SRE,Sempra,Utilities,SP500
+STE,Steris,Health Care,SP500
+STLD,Steel Dynamics,Materials,SP500
+STT,State Street Corporation,Financials,SP500
+STX,Seagate Technology,Information Technology,SP500
+STZ,Constellation Brands,Consumer Staples,SP500
+SW,Smurfit Westrock,Materials,SP500
+SWK,Stanley Black & Decker,Industrials,SP500
+SWKS,Skyworks Solutions,Information Technology,SP500
+SYF,Synchrony Financial,Financials,SP500
+SYK,Stryker Corporation,Health Care,SP500
+SYY,Sysco,Consumer Staples,SP500
+T,AT&T,Communication Services,SP500
+TAP,Molson Coors Beverage Company,Consumer Staples,SP500
+TDG,TransDigm Group,Industrials,SP500
+TDY,Teledyne Technologies,Information Technology,SP500
+TECH,Bio-Techne,Health Care,SP500
+TEL,TE Connectivity,Information Technology,SP500
+TER,Teradyne,Information Technology,SP500
+TFC,Truist Financial,Financials,SP500
+TGT,Target Corporation,Consumer Staples,SP500
+TJX,TJX Companies,Consumer Discretionary,SP500
+TKO,TKO Group Holdings,Communication Services,SP500
+TMO,Thermo Fisher Scientific,Health Care,SP500
+TMUS,T-Mobile US,Communication Services,SP500
+TPL,Texas Pacific Land Corporation,Energy,SP500
+TPR,"Tapestry, Inc.",Consumer Discretionary,SP500
+TRGP,Targa Resources,Energy,SP500
+TRMB,Trimble Inc.,Information Technology,SP500
+TROW,T. Rowe Price,Financials,SP500
+TRV,Travelers Companies (The),Financials,SP500
+TSCO,Tractor Supply,Consumer Discretionary,SP500
+TSLA,"Tesla, Inc.",Consumer Discretionary,SP500
+TSN,Tyson Foods,Consumer Staples,SP500
+TT,Trane Technologies,Industrials,SP500
+TTD,Trade Desk (The),Communication Services,SP500
+TTWO,Take-Two Interactive,Communication Services,SP500
+TXN,Texas Instruments,Information Technology,SP500
+TXT,Textron,Industrials,SP500
+TYL,Tyler Technologies,Information Technology,SP500
+UAL,United Airlines Holdings,Industrials,SP500
+UBER,Uber,Industrials,SP500
+UDR,"UDR, Inc.",Real Estate,SP500
+UHS,Universal Health Services,Health Care,SP500
+ULTA,Ulta Beauty,Consumer Discretionary,SP500
+UNH,UnitedHealth Group,Health Care,SP500
+UNP,Union Pacific Corporation,Industrials,SP500
+UPS,United Parcel Service,Industrials,SP500
+URI,United Rentals,Industrials,SP500
+USB,U.S. Bancorp,Financials,SP500
+V,Visa Inc.,Financials,SP500
+VEEV,Veeva Systems,Health Care,SP500
+VICI,Vici Properties,Real Estate,SP500
+VLO,Valero Energy,Energy,SP500
+VLTO,Veralto,Industrials,SP500
+VMC,Vulcan Materials Company,Materials,SP500
+VMRK,Vivmark Residential,Real Estate,SP500
+VRSK,Verisk Analytics,Industrials,SP500
+VRSN,Verisign,Information Technology,SP500
+VRT,Vertiv,Industrials,SP500
+VRTX,Vertex Pharmaceuticals,Health Care,SP500
+VST,Vistra Corp.,Utilities,SP500
+VTR,Ventas,Real Estate,SP500
+VTRS,Viatris,Health Care,SP500
+VZ,Verizon,Communication Services,SP500
+WAB,Wabtec,Industrials,SP500
+WAT,Waters Corporation,Health Care,SP500
+WBD,Warner Bros. Discovery,Communication Services,SP500
+WDAY,"Workday, Inc.",Information Technology,SP500
+WDC,Western Digital,Information Technology,SP500
+WEC,WEC Energy Group,Utilities,SP500
+WELL,Welltower,Real Estate,SP500
+WFC,Wells Fargo,Financials,SP500
+WM,Waste Management,Industrials,SP500
+WMB,Williams Companies,Energy,SP500
+WMT,Walmart,Consumer Staples,SP500
+WRB,W. R. Berkley Corporation,Financials,SP500
+WSM,"Williams-Sonoma, Inc.",Consumer Discretionary,SP500
+WST,West Pharmaceutical Services,Health Care,SP500
+WTW,Willis Towers Watson,Financials,SP500
+WY,Weyerhaeuser,Real Estate,SP500
+WYNN,Wynn Resorts,Consumer Discretionary,SP500
+XEL,Xcel Energy,Utilities,SP500
+XOM,ExxonMobil,Energy,SP500
+XYL,Xylem Inc.,Industrials,SP500
+XYZ,"Block, Inc.",Financials,SP500
+YUM,Yum! Brands,Consumer Discretionary,SP500
+ZBH,Zimmer Biomet,Health Care,SP500
+ZBRA,Zebra Technologies,Information Technology,SP500
+ZTS,Zoetis,Health Care,SP500
