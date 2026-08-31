@@ -402,6 +402,11 @@ def compute_metrics(close, volume, open_=None):
     out["above_50dma"] = out["pct_vs_50dma"] > 0
     out["above_200dma"] = out["pct_vs_200dma"] > 0
 
+    # 20-day average - the shortest trend gauge worth keeping. Reported, not scored.
+    sma20 = close.rolling(20).mean().iloc[-1]
+    out["pct_vs_20dma"] = out["price"] / sma20 - 1.0
+    out["above_20dma"] = out["pct_vs_20dma"] > 0
+
     # How far price must MOVE to reach the 50-day average - negative means it must fall.
     # This is NOT pct_vs_50dma with the sign flipped: +19.2% above the mean is a -16.1%
     # fall back to it, not -19.2%. Reported, not scored. It exists so the size of an
@@ -456,6 +461,37 @@ def compute_metrics(close, volume, open_=None):
         out["rvol"] = volume.iloc[-1] / volume.iloc[-51:-1].mean()
     else:
         out["rvol"] = np.nan
+
+    # Average daily dollar volume over 50 sessions, in $ millions. A liquidity guard that is
+    # near-meaningless for index constituents but real for names added via universe_extra.csv.
+    out["avg_dollar_vol_m"] = (close.iloc[-50:] * volume.iloc[-50:]).mean() / 1e6
+
+    # PULLBACK SETUP (9-EMA). REPORTED, NEVER SCORED - and, unlike every other column,
+    # this one encodes a TRADING PATTERN, not a measurement: a short pullback into a rising
+    # 9-period EMA while the larger trend is up. It comes from a Cashflow Academy video and
+    # carries NO evidence of efficacy; it earns any weight from the dated archives or none.
+    # Close-only data, so "into the average" means the close sits near the EMA, not a touch
+    # of the low (we do not pull lows for the bulk universe).
+    # All four must hold:
+    #   1. trend context:  close above the 50-day average
+    #   2. rising mean:    9-EMA was rising INTO the pullback - measured at the pullback's
+    #                      start (t-3), not today, because three down closes legitimately dent
+    #                      the EMA itself; the pattern is a dip into a mean that WAS rising
+    #   3. a pullback:     close below the close 3 sessions ago AND >=2 of last 3 changes down
+    #   4. near the mean:  close within -2.5% .. +3% of the 9-EMA
+    ema9 = close.ewm(span=9, adjust=False).mean()
+    out["pct_vs_9ema"] = out["price"] / ema9.iloc[-1] - 1.0
+    if len(close) >= 55:
+        chg = close.diff()
+        down3 = (chg.iloc[-3:] < 0).sum()
+        out["pullback_9ema"] = ((out["price"] / sma50 > 1.0)
+                                & (ema9.iloc[-4] > ema9.iloc[-9])
+                                & (close.iloc[-1] < close.iloc[-4])
+                                & (down3 >= 2)
+                                & (out["pct_vs_9ema"] >= -0.025)
+                                & (out["pct_vs_9ema"] <= 0.03))
+    else:
+        out["pullback_9ema"] = False
 
     # Composite
     score = pd.Series(0.0, index=out.index)
@@ -615,6 +651,33 @@ def self_test():
     checks.append(("score is unchanged with and without Open data",
                    float((m["score"] - m_noopen["score"].reindex(m.index)).abs().max()) < 1e-12))
 
+    # 20-day MA and the 9-EMA pullback flag - exact synthetic answers.
+    checks.append(("pct_vs_20dma matches a hand-computed sma20",
+                   abs(m.loc["T00", "pct_vs_20dma"]
+                       - (close["T00"].iloc[-1] / close["T00"].iloc[-20:].mean() - 1)) < 1e-12))
+    # Build a deliberate pullback: strong uptrend, then exactly 3 mild down closes ending
+    # just above the 9-EMA - the flag must fire. Then break each condition in turn.
+    idx2 = close.index
+    up = pd.Series(np.linspace(100, 160, len(idx2)), index=idx2)          # steady riser
+    pb = up.copy(); pb.iloc[-3:] = pb.iloc[-4] * np.array([0.995, 0.99, 0.985])
+    flat_vol = pd.Series(1e6, index=idx2)
+    def flag(series):
+        mm = compute_metrics(pd.DataFrame({"X": series}), pd.DataFrame({"X": flat_vol}))
+        return bool(mm.loc["X", "pullback_9ema"])
+    checks.append(("pullback flag fires on 3 down closes into a rising 9-EMA", flag(pb)))
+    checks.append(("no flag without a pullback (steady riser)", not flag(up)))
+    deep = up.copy(); deep.iloc[-3:] = deep.iloc[-4] * np.array([0.97, 0.94, 0.90])
+    checks.append(("no flag when the fall breaks well below the 9-EMA", not flag(deep)))
+    down = pd.Series(np.linspace(160, 100, len(idx2)), index=idx2)
+    dpb = down.copy(); dpb.iloc[-3:] = dpb.iloc[-4] * np.array([0.995, 0.99, 0.985])
+    checks.append(("no flag in a downtrend (below the 50-day)", not flag(dpb)))
+    checks.append(("pullback columns never enter the composite",
+                   not any(k in WEIGHTS for k in
+                           ("pct_vs_20dma", "above_20dma", "pct_vs_9ema", "pullback_9ema",
+                            "avg_dollar_vol_m"))))
+    checks.append(("avg dollar volume is positive and finite",
+                   bool(np.isfinite(m["avg_dollar_vol_m"]).all() and (m["avg_dollar_vol_m"] > 0).all())))
+
     # Breadth: a group where one name carries the move must show high concentration,
     # and one where every name moves together must show near-zero.
     bm = m.copy()
@@ -688,7 +751,8 @@ def main():
             "ret_1d", "ret_1w", "ret_1m", "ret_3m", "ret_6m",
             "rs_1m", "rs_3m", "rs_6m", "rs_3m_chg",
             "pct_from_52w_high", "pct_from_52w_low", "new_52w_high",
-            "pct_vs_50dma", "pct_vs_200dma", "dist_to_50dma",
+            "pct_vs_20dma", "above_20dma", "pct_vs_50dma", "pct_vs_200dma", "dist_to_50dma",
+            "pct_vs_9ema", "pullback_9ema", "avg_dollar_vol_m",
             "above_50dma", "above_200dma", "vol_ratio_20_60", "volume_x",
             "gap_pct", "gap_up", "rvol"]
     m = m[[c for c in cols if c in m.columns]]
@@ -739,6 +803,17 @@ def main():
         ev = ["name", "sector", "rank", "score", "pct_vs_50dma", "dist_to_50dma",
               "pct_vs_200dma", "pct_from_52w_high", "vol_ratio_20_60"]
         print(ext[[c for c in ev if c in ext.columns]].round(3).to_string())
+
+    if "pullback_9ema" in m.columns and m["pullback_9ema"].any():
+        pb = m[m["pullback_9ema"] & (m["rank"] <= 150)].sort_values("rank")
+        print("\n=== PULLBACK SETUPS (9-EMA, rank <= 150) ===")
+        print("  A short pullback into a rising 9-EMA inside an uptrend - an ENTRY pattern from a")
+        print("  trading video, carried with no evidence of efficacy. Close-based approximation.")
+        if len(pb):
+            pv = ["name", "sector", "rank", "pct_vs_9ema", "pct_vs_50dma", "ret_3m", "pct_from_52w_high"]
+            print(pb.head(15)[[c for c in pv if c in pb.columns]].round(3).to_string())
+        else:
+            print("  none in the top 150 today")
 
     if "gap_pct" in m.columns and m["gap_pct"].notna().any():
         print("\n=== GAPPED UP >=%.0f%% ON THE LAST COMPLETED SESSION (sorted by rvol) ==="
