@@ -25,8 +25,13 @@ def ndx_members():
         return s
     except Exception as e:
         print("  WARNING: Nasdaq-100 fetch failed (%s)" % e)
-        print("  Falling back to the CSV's index column, which UNDER-TAGS dual-listed members.")
-        return None
+        print("  Falling back to the static list below (constituents as of 2026-08-31).")
+        return set(STATIC_NDX.split(","))
+
+# Fallback constituent list, verified against Wikipedia on 2026-08-31. Index membership
+# changes a few names a quarter, so this drifts slowly; the live fetch above is preferred
+# and this only catches the runner environments where that parse fails.
+STATIC_NDX = ("ADBE,AMD,ABNB,ALNY,GOOGL,GOOG,AMZN,AEP,AMGN,ADI,AAPL,AMAT,APP,ARM,ASML,ADSK,ADP,AXON,BKR,BKNG,AVGO,CDNS,CHTR,CTAS,CSCO,CCEP,CTSH,CMCSA,CEG,CPRT,CSGP,COST,CRWD,CSX,DDOG,DXCM,FANG,DASH,EA,EXC,FAST,FER,FTNT,GEHC,GILD,HON,IDXX,INSM,INTC,INTU,ISRG,KDP,KLAC,KHC,LRCX,LIN,MAR,MRVL,MELI,META,MCHP,MU,MSFT,MSTR,MDLZ,MPWR,MNST,NFLX,NVDA,NXPI,ORLY,ODFL,PCAR,PLTR,PANW,PAYX,PYPL,PDD,PEP,QCOM,REGN,ROP,ROST,SNDK,STX,SHOP,SBUX,SNPS,TMUS,TTWO,TSLA,TXN,TRI,VRSK,VRTX,WMT,WBD,WDC,WDAY,XEL,ZS")
 
 COLS = ['Ticker','name','sector','score','rank','price','ret_1w','ret_1m','ret_3m','ret_6m',
         'rs_3m_chg','pct_from_52w_high','pct_from_52w_low','pct_vs_20dma','pct_vs_50dma',
