@@ -83,6 +83,15 @@ WEIGHTS = {
 # written to the CSV and printed, and touch no score. See the note in compute_metrics.
 GAP_THRESHOLD = 0.03
 
+# "Strong but extended" report. A momentum screen selects for extension almost by
+# definition - on the 2026-08-30 run, 31 of the top 40 sat >=10% above their 50-day and the
+# MEDIAN was 13.5%. So an absolute threshold flags nearly everything and discriminates
+# nothing. The report therefore ranks extension RELATIVE to the shortlist and prints the
+# median as the reference line; the threshold below is only used to count how many clear it.
+# Display only; touches no score.
+EXT_THRESHOLD = 0.10
+EXT_SHOW = 12          # how many of the most extended top-ranked names to list
+
 
 # --------------------------------------------------------------------------------------
 # Universe
@@ -393,6 +402,12 @@ def compute_metrics(close, volume, open_=None):
     out["above_50dma"] = out["pct_vs_50dma"] > 0
     out["above_200dma"] = out["pct_vs_200dma"] > 0
 
+    # How far price must MOVE to reach the 50-day average - negative means it must fall.
+    # This is NOT pct_vs_50dma with the sign flipped: +19.2% above the mean is a -16.1%
+    # fall back to it, not -19.2%. Reported, not scored. It exists so the size of an
+    # ordinary mean-reversion is visible on the CSV instead of being worked out by hand.
+    out["dist_to_50dma"] = sma50 / out["price"] - 1.0
+
     # 52-week high proximity
     hi52 = close.rolling(min(252, len(close))).max().iloc[-1]
     out["pct_from_52w_high"] = out["price"] / hi52 - 1.0
@@ -568,6 +583,19 @@ def self_test():
     checks.append(("52w low distance is never negative",
                    bool((m["pct_from_52w_low"] >= -1e-9).all())))
 
+    # Extension: dist_to_50dma must be the exact inverse move, not the negated distance.
+    pv, dv = m["pct_vs_50dma"], m["dist_to_50dma"]
+    checks.append(("dist_to_50dma is the exact inverse move",
+                   float((((1 + pv) * (1 + dv)) - 1).abs().max()) < 1e-12))
+    checks.append(("dist_to_50dma is NOT just -pct_vs_50dma where extended",
+                   bool(((pv.abs() > 0.02) & ((dv + pv).abs() > 1e-6)).any())))
+    checks.append(("sign is opposite to pct_vs_50dma",
+                   bool(((pv > 0) == (dv < 0)).all())))
+    checks.append(("extension columns never enter the composite",
+                   not any(k in WEIGHTS for k in ("pct_vs_50dma", "dist_to_50dma"))))
+    checks.append(("EXT_THRESHOLD is a display filter, not a weight",
+                   isinstance(EXT_THRESHOLD, float) and "EXT_THRESHOLD" not in str(WEIGHTS)))
+
     # Gap and relative volume: exact answers, and the failure mode that matters most -
     # a missing Open must produce NaN, never a silently wrong number.
     checks.append(("gap_pct recovers the injected +5% gap",
@@ -660,7 +688,7 @@ def main():
             "ret_1d", "ret_1w", "ret_1m", "ret_3m", "ret_6m",
             "rs_1m", "rs_3m", "rs_6m", "rs_3m_chg",
             "pct_from_52w_high", "pct_from_52w_low", "new_52w_high",
-            "pct_vs_50dma", "pct_vs_200dma",
+            "pct_vs_50dma", "pct_vs_200dma", "dist_to_50dma",
             "above_50dma", "above_200dma", "vol_ratio_20_60", "volume_x",
             "gap_pct", "gap_up", "rvol"]
     m = m[[c for c in cols if c in m.columns]]
@@ -687,13 +715,30 @@ def main():
     pd.set_option("display.width", 200, "display.max_columns", 30)
     print("\n=== TOP %d BY COMPOSITE ===" % args.top)
     show = ["rank", "score", "name", "sector", "ret_3m", "rs_3m", "rs_3m_chg",
-            "pct_from_52w_high", "vol_ratio_20_60", "volume_x"]
+            "pct_from_52w_high", "pct_vs_50dma", "vol_ratio_20_60", "volume_x"]
     print(m.head(args.top)[[c for c in show if c in m.columns]].round(3).to_string())
 
     print("\n=== BIGGEST MOVES YESTERDAY (top 15 by 1-day return) ===")
     mv = ["name", "sector", "ret_1d", "ret_1w", "volume_x", "rank"]
     print(m.sort_values("ret_1d", ascending=False).head(15)[
         [c for c in mv if c in m.columns]].round(3).to_string())
+
+    if "pct_vs_50dma" in m.columns:
+        top = m.head(args.top)
+        med = float(top["pct_vs_50dma"].median())
+        over = int((top["pct_vs_50dma"] >= EXT_THRESHOLD).sum())
+        ext = top.sort_values("pct_vs_50dma", ascending=False).head(EXT_SHOW)
+        print("\n=== MOST EXTENDED OF THE TOP %d BY COMPOSITE ===" % args.top)
+        print("  The composite scores STRENGTH. It says nothing about how far price has run")
+        print("  from its own mean, and a momentum screen selects for that by construction:")
+        print("  median extension in this shortlist is %+.1f%%, and %d of %d are >=%.0f%% above."
+              % (med * 100, over, len(top), EXT_THRESHOLD * 100))
+        print("  So judge these against the median, not against zero. dist_to_50dma is the")
+        print("  move needed to get back to the average - which would break no trend at all.")
+        print("  A good trend and a good entry are different questions; this column is the second.")
+        ev = ["name", "sector", "rank", "score", "pct_vs_50dma", "dist_to_50dma",
+              "pct_vs_200dma", "pct_from_52w_high", "vol_ratio_20_60"]
+        print(ext[[c for c in ev if c in ext.columns]].round(3).to_string())
 
     if "gap_pct" in m.columns and m["gap_pct"].notna().any():
         print("\n=== GAPPED UP >=%.0f%% ON THE LAST COMPLETED SESSION (sorted by rvol) ==="
