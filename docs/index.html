@@ -24,6 +24,8 @@ button{font:inherit;font-size:13px;border:1px solid var(--rule);background:var(-
  color:var(--ink);border-radius:999px;padding:7px 13px;cursor:pointer}
 button.on{background:var(--accent);border-color:var(--accent);color:#fff}
 button.ghost{background:transparent;color:var(--ink2)}
+a.ghost{font-size:13px;border:1px solid var(--rule);background:transparent;color:var(--ink2);
+ border-radius:999px;padding:7px 13px;text-decoration:none}
 .panel{background:var(--card);border:1px solid var(--rule);border-radius:12px;padding:12px 13px;margin-bottom:12px}
 .f{margin-bottom:13px}
 .f:last-child{margin-bottom:2px}
@@ -81,6 +83,8 @@ select{font:inherit;font-size:13px;background:var(--card);color:var(--ink);
     </select>
     <button id="reset" class="ghost">Reset</button>
     <button id="install" class="ghost">Install</button>
+    <a id="rerun" class="ghost" href="https://github.com/chandranmdr/investing-screener/actions/workflows/screener.yml"
+       target="_blank" rel="noopener">Refresh data ↗</a>
   </div>
 
   <div class="panel" id="panel">

@@ -1,5 +1,5 @@
 // Cache-first for the shell, network-first for data so a new run shows up when online.
-const CACHE = 'scanner-v2';
+const CACHE = 'scanner-v3';
 const SHELL = ['./','./index.html','./manifest.webmanifest','./icon-192.png','./icon-512.png'];
 self.addEventListener('install', e => {
   e.waitUntil(caches.open(CACHE).then(c => c.addAll(SHELL)).then(() => self.skipWaiting()));
