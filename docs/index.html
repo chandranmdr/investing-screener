@@ -1,0 +1,241 @@
+<!doctype html><html lang="en"><head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>Momentum Scanner</title>
+<link rel="manifest" href="manifest.webmanifest">
+<meta name="theme-color" content="#2a78d6">
+<link rel="apple-touch-icon" href="icon-192.png">
+<style>
+:root{color-scheme:light;--bg:#fcfcfb;--card:#fff;--card2:#f4f4f2;--ink:#0b0b0b;--ink2:#52514e;
+ --ink3:#8a8984;--accent:#2a78d6;--rule:#e2e2de;--good:#0a7d4e;--bad:#c0362c;--chip:#eceae5;}
+@media(prefers-color-scheme:dark){:root:where(:not([data-theme=light])){color-scheme:dark;
+ --bg:#161615;--card:#1f1f1e;--card2:#282827;--ink:#fff;--ink2:#c3c2b7;--ink3:#8e8d85;
+ --accent:#3987e5;--rule:#33332f;--good:#3fbb85;--bad:#ef7b72;--chip:#2e2e2b;}}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+body{margin:0;background:var(--bg);color:var(--ink);
+ font:15px/1.45 ui-sans-serif,system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;
+ padding:env(safe-area-inset-top) 0 env(safe-area-inset-bottom)}
+header{position:sticky;top:0;z-index:5;background:var(--bg);border-bottom:1px solid var(--rule);
+ padding:12px 14px 10px}
+h1{font-size:17px;margin:0;letter-spacing:-.3px}
+.meta{font-size:11.5px;color:var(--ink3);margin-top:2px}
+.wrap{padding:0 14px 40px;max-width:900px;margin:0 auto}
+.bar{display:flex;gap:8px;align-items:center;margin:12px 0 10px;flex-wrap:wrap}
+button{font:inherit;font-size:13px;border:1px solid var(--rule);background:var(--card);
+ color:var(--ink);border-radius:999px;padding:7px 13px;cursor:pointer}
+button.on{background:var(--accent);border-color:var(--accent);color:#fff}
+button.ghost{background:transparent;color:var(--ink2)}
+.panel{background:var(--card);border:1px solid var(--rule);border-radius:12px;padding:12px 13px;margin-bottom:12px}
+.f{margin-bottom:13px}
+.f:last-child{margin-bottom:2px}
+.flab{display:flex;justify-content:space-between;align-items:baseline;font-size:12.5px;
+ color:var(--ink2);margin-bottom:5px}
+.flab b{color:var(--ink);font-variant-numeric:tabular-nums;font-size:13px}
+input[type=range]{width:100%;accent-color:var(--accent);height:26px}
+.toggles{display:flex;flex-wrap:wrap;gap:7px}
+.sectors{display:flex;flex-wrap:wrap;gap:6px;margin-top:4px}
+.sectors button{font-size:11.5px;padding:5px 9px}
+.funnel{font-size:12px;color:var(--ink2);background:var(--card2);border-radius:9px;
+ padding:9px 11px;margin-bottom:12px}
+.funnel div{display:flex;justify-content:space-between;padding:2px 0}
+.funnel .cut{color:var(--bad)}
+.count{font-size:13px;color:var(--ink2);margin:4px 0 10px}
+.count b{color:var(--ink);font-size:15px}
+.row{background:var(--card);border:1px solid var(--rule);border-radius:11px;padding:11px 12px;
+ margin-bottom:8px;cursor:pointer}
+.r1{display:flex;justify-content:space-between;align-items:baseline;gap:8px}
+.tk{font-weight:650;font-size:15px}
+.nm{color:var(--ink3);font-size:12px;font-weight:400;margin-left:6px}
+.big{font-variant-numeric:tabular-nums;font-weight:650;font-size:15px}
+.r2{display:flex;gap:11px;flex-wrap:wrap;font-size:11.5px;color:var(--ink2);
+ font-variant-numeric:tabular-nums;margin-top:4px}
+.r2 b{color:var(--ink);font-weight:600}
+.pos{color:var(--good)}.neg{color:var(--bad)}
+.det{display:none;margin-top:9px;padding-top:9px;border-top:1px solid var(--rule);
+ font-size:12px;color:var(--ink2)}
+.det.open{display:block}
+.dg{display:grid;grid-template-columns:1fr 1fr;gap:4px 14px;font-variant-numeric:tabular-nums}
+.dg span{display:flex;justify-content:space-between;gap:10px;border-bottom:1px dotted var(--rule);padding:2px 0}
+.dg span.wide{grid-column:1/-1}
+.dg b{color:var(--ink);font-weight:600}
+.empty{text-align:center;color:var(--ink3);padding:34px 10px;font-size:13.5px}
+.foot{color:var(--ink3);font-size:11px;margin-top:20px;border-top:1px solid var(--rule);padding-top:11px}
+#install{display:none}
+select{font:inherit;font-size:13px;background:var(--card);color:var(--ink);
+ border:1px solid var(--rule);border-radius:8px;padding:7px 9px}
+</style></head><body>
+<header>
+  <h1>Momentum Scanner</h1>
+  <div class="meta" id="meta">loading…</div>
+</header>
+<div class="wrap">
+  <div class="bar">
+    <button id="tf" class="on">Filters</button>
+    <select id="sort">
+      <option value="score">Sort: composite score</option>
+      <option value="ret_1m">Sort: 1-month return</option>
+      <option value="ret_3m">Sort: 3-month return</option>
+      <option value="ret_6m">Sort: 6-month return</option>
+      <option value="rs_3m_chg">Sort: RS improving</option>
+      <option value="pct_vs_50dma_asc">Sort: least extended</option>
+      <option value="pct_from_52w_low_asc">Sort: closest to 52w low</option>
+    </select>
+    <button id="reset" class="ghost">Reset</button>
+    <button id="install" class="ghost">Install</button>
+  </div>
+
+  <div class="panel" id="panel">
+    <div class="f"><div class="flab"><span>Minimum 3-month return</span><b id="v_r3">—</b></div>
+      <input type="range" id="r3" min="-40" max="60" step="1"></div>
+    <div class="f"><div class="flab"><span>Minimum 1-month return</span><b id="v_r1">—</b></div>
+      <input type="range" id="r1" min="-40" max="60" step="1"></div>
+    <div class="f"><div class="flab"><span>Max extension above 50-day</span><b id="v_ext">—</b></div>
+      <input type="range" id="ext" min="0" max="50" step="1"></div>
+    <div class="f"><div class="flab"><span>Max % below 52-week high</span><b id="v_hi">—</b></div>
+      <input type="range" id="hi" min="0" max="80" step="1"></div>
+    <div class="f"><div class="flab"><span>Max % above 52-week low <i style="font-style:normal;color:var(--ink3)">(fresh base vs mature recovery)</i></span><b id="v_lo">—</b></div>
+      <input type="range" id="lo" min="0" max="300" step="5"></div>
+    <div class="f"><div class="flab"><span>Minimum price</span><b id="v_minpx">—</b></div>
+      <input type="range" id="minpx" min="0" max="100" step="5" value="0"></div>
+    <div class="f"><div class="flab"><span>Minimum relative volume</span><b id="v_minrvol">—</b></div>
+      <input type="range" id="minrvol" min="0" max="30" step="1" value="0"></div>
+    <div class="f" id="f_adv"><div class="flab"><span>Min avg dollar volume ($m/day)</span><b id="v_minadv">—</b></div>
+      <input type="range" id="minadv" min="0" max="500" step="25" value="0"></div>
+    <div class="f"><div class="flab"><span>Filters</span></div>
+      <div class="toggles">
+        <button data-t="a20" id="t_a20">Above 20-day</button>
+        <button data-t="a50">Above 50-day</button>
+        <button data-t="a200">Above 200-day</button>
+        <button data-t="rs">RS improving</button>
+        <button data-t="ndx">Nasdaq-100 only</button>
+        <button data-t="vc">Volatility contracting</button>
+        <button data-t="pb" id="t_pb" title="3 down closes into a rising 9-EMA, uptrend intact — an entry pattern, no proven edge">Pullback setup (9-EMA)</button>
+      </div></div>
+    <div class="f"><div class="flab"><span>Sectors <i style="font-style:normal;color:var(--ink3)">(none selected = all)</i></span></div>
+      <div class="sectors" id="secs"></div></div>
+  </div>
+
+  <div class="funnel" id="funnel"></div>
+  <div class="count" id="count"></div>
+  <div id="list"></div>
+  <p class="foot" id="foot"></p>
+</div>
+<script>
+const S={r3:-100,r1:-100,ext:100,hi:100,lo:1000,minpx:0,minrvol:0,minadv:0,a50:false,a200:false,a20:false,rs:false,ndx:false,vc:false,pb:false,secs:new Set(),sort:'score'};
+const DEF=JSON.parse(JSON.stringify({...S,secs:[]}));
+let D=null;
+const pc=v=>v==null?'—':(v>=0?'+':'')+(v*100).toFixed(1)+'%';
+const cls=v=>v==null?'':v>=0?'pos':'neg';
+const $=id=>document.getElementById(id);
+
+fetch('data.json').then(r=>r.json()).then(d=>{D=d;boot();})
+ .catch(()=>{$('meta').textContent='Could not load data. Open once while online.';});
+
+function boot(){
+  $('meta').textContent=`${D.rows.length} names · ${D.asof?('prices to '+D.asof+' · '):''}screen run ${D.run} (last completed session)`;
+  $('foot').innerHTML='Prices from the weekday screener run. Hard filters: a name must pass every active test. '
+   +'This surfaces candidates from deterministic data &mdash; it is not advice and makes no forecast.';
+  D.sectors.forEach(s=>{const b=document.createElement('button');b.textContent=s;b.dataset.sec=s;
+    b.onclick=()=>{S.secs.has(s)?S.secs.delete(s):S.secs.add(s);b.classList.toggle('on');render();};
+    $('secs').appendChild(b);});
+  [['r3','r3','v_r3',-100],['r1','r1','v_r1',-100],['ext','ext','v_ext',100],
+   ['hi','hi','v_hi',100],['lo','lo','v_lo',1000]].forEach(([el,key,out,off])=>{
+    const i=$(el);
+    i.value = key==='r3'||key==='r1' ? -40 : (key==='lo'?300:(key==='hi'?80:50));
+    i.oninput=()=>{const raw=+i.value;
+      const atEnd = (key==='r3'||key==='r1') ? raw<=-40 : raw>=+i.max;
+      S[key]= atEnd ? off : raw/100;
+      $(out).textContent = atEnd ? 'off' : (key==='r3'||key==='r1'?pc(raw/100):(raw+'%'));
+      render();};
+    i.oninput();
+  });
+  // "minimum" sliders: 0 = off; minrvol slider is in tenths
+  [['minpx','minpx','v_minpx',v=>'$'+v,1],['minrvol','minrvol','v_minrvol',v=>v.toFixed(1)+'x',0.1],
+   ['minadv','minadv','v_minadv',v=>'$'+v+'m',1]].forEach(([el,key,out,fmt,scale])=>{
+    const i=$(el);
+    i.oninput=()=>{const v=+i.value*scale; S[key]=v;
+      $(out).textContent = v<=0 ? 'off' : fmt(v); render();};
+    i.oninput();
+  });
+  // gate controls on data actually present (older data.json lacks the new columns)
+  const has=k=>D.rows.some(r=>r[k]!=null);
+  if(!has('pct_vs_20dma')) $('t_a20').style.display='none';
+  if(!has('pullback_9ema')) $('t_pb').style.display='none';
+  if(!has('avg_dollar_vol_m')) $('f_adv').style.display='none';
+  document.querySelectorAll('[data-t]').forEach(b=>b.onclick=()=>{
+    S[b.dataset.t]=!S[b.dataset.t];b.classList.toggle('on');render();});
+  $('sort').onchange=e=>{S.sort=e.target.value;render();};
+  $('tf').onclick=()=>{const p=$('panel');const sh=p.style.display==='none';
+    p.style.display=sh?'':'none';$('tf').classList.toggle('on',sh);};
+  $('reset').onclick=()=>location.reload();
+  render();
+}
+
+const TESTS=[
+ ['3-month return',   r=>S.r3<=-1   || (r.ret_3m!=null && r.ret_3m>=S.r3)],
+ ['1-month return',   r=>S.r1<=-1   || (r.ret_1m!=null && r.ret_1m>=S.r1)],
+ ['extension',        r=>S.ext>=1   || (r.pct_vs_50dma!=null && r.pct_vs_50dma<=S.ext)],
+ ['below 52w high',   r=>S.hi>=1    || (r.pct_from_52w_high!=null && -r.pct_from_52w_high<=S.hi)],
+ ['above 52w low',    r=>S.lo>=10   || (r.pct_from_52w_low!=null && r.pct_from_52w_low<=S.lo)],
+ ['price',            r=>S.minpx<=0 || (r.price!=null && r.price>=S.minpx)],
+ ['relative volume',  r=>S.minrvol<=0|| (r.rvol!=null && r.rvol>=S.minrvol)],
+ ['dollar volume',    r=>S.minadv<=0 || (r.avg_dollar_vol_m!=null && r.avg_dollar_vol_m>=S.minadv)],
+ ['above 20-day',     r=>!S.a20     || r.pct_vs_20dma>0],
+ ['above 50-day',     r=>!S.a50     || r.pct_vs_50dma>0],
+ ['above 200-day',    r=>!S.a200    || r.pct_vs_200dma>0],
+ ['RS improving',     r=>!S.rs      || r.rs_3m_chg>0],
+ ['Nasdaq-100',       r=>!S.ndx     || r.ndx],
+ ['vol contracting',  r=>!S.vc      || (r.vol_ratio_20_60!=null && r.vol_ratio_20_60<1)],
+ ['pullback setup',   r=>!S.pb      || r.pullback_9ema===true],
+ ['sector',           r=>S.secs.size===0 || S.secs.has(r.sector)],
+];
+
+function render(){
+  let live=D.rows.slice(), lines=[], prev=live.length;
+  const active=[];
+  TESTS.forEach(([name,fn])=>{
+    const before=live.length; live=live.filter(fn); const cut=before-live.length;
+    if(cut>0||before!==D.rows.length) {}
+    if(cut>0) active.push([name,cut]);
+  });
+  $('funnel').innerHTML = active.length
+    ? `<div><span>starting universe</span><b>${D.rows.length}</b></div>`
+      + active.map(([n,c])=>`<div><span>&minus; ${n}</span><span class="cut">&minus;${c}</span></div>`).join('')
+      + `<div style="border-top:1px solid var(--rule);margin-top:4px;padding-top:5px"><span><b>surviving</b></span><b>${live.length}</b></div>`
+    : `<div><span>no filters active</span><b>${D.rows.length} names</b></div>`;
+  const k=S.sort;
+  live.sort((a,b)=>{
+    if(k==='pct_vs_50dma_asc') return (a.pct_vs_50dma??9)-(b.pct_vs_50dma??9);
+    if(k==='pct_from_52w_low_asc') return (a.pct_from_52w_low??9)-(b.pct_from_52w_low??9);
+    return (b[k]??-9)-(a[k]??-9);
+  });
+  $('count').innerHTML=`<b>${live.length}</b> name${live.length===1?'':'s'} pass`;
+  const L=$('list');
+  if(!live.length){L.innerHTML='<div class="empty">Nothing passes every filter.<br>Loosen one and try again.</div>';return;}
+  L.innerHTML=live.slice(0,120).map(r=>`
+   <div class="row" onclick="this.querySelector('.det').classList.toggle('open')">
+    <div class="r1"><div><span class="tk">${r.Ticker}</span><span class="nm">${r.name??''}</span></div>
+      <div class="big ${cls(r.ret_1m)}">${pc(r.ret_1m)}<span style="font-size:10.5px;color:var(--ink3);font-weight:400"> 1m</span></div></div>
+    <div class="r2"><span>3m <b class="${cls(r.ret_3m)}">${pc(r.ret_3m)}</b></span>
+      <span>vs 50d <b class="${cls(r.pct_vs_50dma)}">${pc(r.pct_vs_50dma)}</b></span>
+      <span>off high <b>${pc(r.pct_from_52w_high)}</b></span>
+      <span>rank <b>${r.rank}</b></span></div>
+    <div class="det"><div class="dg">
+      <span class="wide">Sector<b>${r.sector??'—'}</b></span><span>Price<b>$${(r.price??0).toFixed(2)}</b></span><span>Rank<b>${r.rank}</b></span>
+      <span>1 week<b>${pc(r.ret_1w)}</b></span><span>6 months<b>${pc(r.ret_6m)}</b></span>
+      <span>RS trend<b>${pc(r.rs_3m_chg)}</b></span><span>Composite<b>${(r.score??0).toFixed(3)}</b></span>
+      <span>Above 52w low<b>${pc(r.pct_from_52w_low)}</b></span><span>vs 200-day<b>${pc(r.pct_vs_200dma)}</b></span>
+      <span>Pullback to 50d<b>${pc(r.dist_to_50dma)}</b></span><span>Vol ratio<b>${(r.vol_ratio_20_60??0).toFixed(2)}</b></span>
+      <span>Rel. volume<b>${(r.rvol??0).toFixed(2)}x</b></span><span>Nasdaq-100<b>${r.ndx?'yes':'no'}</b></span>
+      ${r.pct_vs_20dma!=null?`<span>vs 20-day<b>${pc(r.pct_vs_20dma)}</b></span>`:''}
+      ${r.pct_vs_9ema!=null?`<span>vs 9-EMA<b>${pc(r.pct_vs_9ema)}</b></span>`:''}
+      ${r.pullback_9ema!=null?`<span>Pullback setup<b>${r.pullback_9ema?'YES':'no'}</b></span>`:''}
+      ${r.avg_dollar_vol_m!=null?`<span>Avg $ vol<b>$${Math.round(r.avg_dollar_vol_m)}m/day</b></span>`:''}
+    </div></div></div>`).join('')
+    + (live.length>120?`<div class="empty">showing the first 120 of ${live.length}</div>`:'');
+}
+if('serviceWorker' in navigator) navigator.serviceWorker.register('sw.js').catch(()=>{});
+let deferred;
+addEventListener('beforeinstallprompt',e=>{e.preventDefault();deferred=e;
+  const b=$('install');b.style.display='inline-block';
+  b.onclick=async()=>{b.style.display='none';deferred.prompt();await deferred.userChoice;deferred=null;};});
+</script></body></html>

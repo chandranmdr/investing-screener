@@ -1,0 +1,16 @@
+{
+  "name": "Momentum Scanner",
+  "short_name": "Scanner",
+  "description": "Filter the S&P 500 + Nasdaq 100 momentum screen on your own parameters.",
+  "start_url": "./index.html",
+  "scope": "./",
+  "display": "standalone",
+  "orientation": "portrait-primary",
+  "background_color": "#fcfcfb",
+  "theme_color": "#2a78d6",
+  "icons": [
+    {"src":"icon-192.png","sizes":"192x192","type":"image/png","purpose":"any"},
+    {"src":"icon-512.png","sizes":"512x512","type":"image/png","purpose":"any"},
+    {"src":"icon-512-maskable.png","sizes":"512x512","type":"image/png","purpose":"maskable"}
+  ]
+}
